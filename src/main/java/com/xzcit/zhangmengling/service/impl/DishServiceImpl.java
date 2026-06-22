@@ -11,13 +11,13 @@ import com.xzcit.zhangmengling.mapper.DishMapper;
 import com.xzcit.zhangmengling.service.DishFlavorService;
 import com.xzcit.zhangmengling.service.DishService;
 import com.xzcit.zhangmengling.service.SetmealDishService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-// 补上 implements DishService
 public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements DishService {
 
     @Resource
@@ -26,30 +26,89 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
     @Resource
     private SetmealDishService setmealDishService;
 
-    // 1.原有新增菜品实现
+    /**
+     * 新增菜品及其对应口味
+     * @param dishDto 菜品DTO对象
+     */
     @Override
+    @Transactional
     public void saveWithFlavor(DishDto dishDto) {
-        // 你原有业务代码
+        // 1. 将DTO转换为Dish实体并保存菜品基本信息
+        Dish dish = new Dish();
+        BeanUtils.copyProperties(dishDto, dish);
+        this.save(dish);
+
+        // 2. 获取保存后的菜品ID
+        Long dishId = dish.getId();
+
+        // 3. 保存菜品口味列表
+        List<DishFlavor> flavors = dishDto.getFlavors();
+        if (flavors != null && !flavors.isEmpty()) {
+            flavors.forEach(flavor -> flavor.setDishId(dishId));
+            dishFlavorService.saveBatch(flavors);
+        }
     }
 
-    // 2.原有根据id查询菜品+口味实现
+    /**
+     * 根据id查询菜品及其对应口味
+     * @param id 菜品ID
+     * @return 菜品DTO对象
+     */
     @Override
     public DishDto getByIdWithFlavor(Long id) {
-        return null;
-        // 你原有业务代码
+        // 1. 根据ID查询菜品基本信息
+        Dish dish = this.getById(id);
+        if (dish == null) {
+            return null;
+        }
+
+        // 2. 将Dish转换为DishDto
+        DishDto dishDto = new DishDto();
+        BeanUtils.copyProperties(dish, dishDto);
+
+        // 3. 根据菜品ID查询对应的口味列表
+        LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(DishFlavor::getDishId, id);
+        List<DishFlavor> flavors = dishFlavorService.list(queryWrapper);
+        dishDto.setFlavors(flavors);
+
+        return dishDto;
     }
 
-    // 3.原有修改菜品实现
+    /**
+     * 修改菜品及其对应口味
+     * @param dishDto 菜品DTO对象
+     */
     @Override
+    @Transactional
     public void updateWithFlavor(DishDto dishDto) {
-        // 你原有业务代码
+        // 1. 更新菜品基本信息
+        Dish dish = new Dish();
+        BeanUtils.copyProperties(dishDto, dish);
+        this.updateById(dish);
+
+        // 2. 删除原有的口味列表
+        Long dishId = dishDto.getId();
+        LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(DishFlavor::getDishId, dishId);
+        dishFlavorService.remove(queryWrapper);
+
+        // 3. 保存新的口味列表
+        List<DishFlavor> flavors = dishDto.getFlavors();
+        if (flavors != null && !flavors.isEmpty()) {
+            flavors.forEach(flavor -> flavor.setDishId(dishId));
+            dishFlavorService.saveBatch(flavors);
+        }
     }
 
-    // 4.新增批量删除方法
+    /**
+     * 批量删除菜品（删除前校验是否被套餐绑定）
+     * @param ids 菜品ID列表
+     */
     @Override
     @Transactional
     public void removeBatchWithCheck(List<Long> ids) {
-        // 校验菜品是否绑定套餐
+        // 1. 校验菜品是否绑定套餐
         LambdaQueryWrapper<SetmealDish> setmealWrapper = new LambdaQueryWrapper<>();
         setmealWrapper.in(SetmealDish::getDishId, ids);
         long bindCount = setmealDishService.count(setmealWrapper);
@@ -57,12 +116,12 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
             throw new CustomException("选中菜品已关联套餐，无法删除，请先解除套餐绑定");
         }
 
-        // 删除对应口味
+        // 2. 删除对应的口味列表
         LambdaQueryWrapper<DishFlavor> flavorWrapper = new LambdaQueryWrapper<>();
         flavorWrapper.in(DishFlavor::getDishId, ids);
         dishFlavorService.remove(flavorWrapper);
 
-        // 批量删菜品
-        baseMapper.deleteBatchIds(ids);
+        // 3. 批量删除菜品
+        this.removeBatchIds(ids);
     }
 }
