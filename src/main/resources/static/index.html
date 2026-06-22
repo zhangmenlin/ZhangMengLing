@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="admin-header">
+    <div class="header-logo">
+        <img src="/images/LOGO.jpg" alt="logo">
+    </div>
+    <div class="header-user">
+        <span>超级管理员</span>
+        <a href="/backend/page/login.html">退出登录</a>
+    </div>
+</header>
+
+<div class="admin-body">
+    <aside class="admin-sidebar">
+        <ul class="nav-list">
+            <li class="nav-item active">
+                <a href="#" data-page="category">
+                    <img src="/images/image04.jpg" style="width:18px;margin-right:8px;">
+                    分类管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" data-page="dish">
+                    <img src="/images/image02.jpg" style="width:18px;margin-right:8px;">
+                    菜品管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" data-page="setmeal">
+                    <img src="/images/image02.jpg" style="width:18px;margin-right:8px;">
+                    套餐管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" data-page="orderDetail">
+                    <img src="/images/image03.jpg" style="width:18px;margin-right:8px;">
+                    订单明细
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="admin-main">
+        <div id="page-category" class="page-content active">
+            <div class="category-container">
+                <div class="category-header">
+                    <h2>分类管理</h2>
+                    <div class="category-buttons">
+                        <button class="btn btn-primary" onclick="openAddDialog(1)">+ 新增菜品分类</button>
+                        <button class="btn btn-success" onclick="openAddDialog(2)">+ 新增套餐分类</button>
+                    </div>
+                </div>
+
+                <div class="category-tabs">
+                    <div class="tab-item active" onclick="switchTab(1)">菜品分类</div>
+                    <div class="tab-item" onclick="switchTab(2)">套餐分类</div>
+                </div>
+
+                <div class="category-table-container">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>分类名称</th>
+                            <th>排序</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="categoryTableBody">
+                        </tbody>
+                    </table>
+                    <!-- 在表格 </table> 标签后添加 -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            共 <span id="totalRecords">0</span> 条记录，每页
+                            <select id="pageSizeSelect" onchange="changePageSize()">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            条
+                        </div>
+
+                        <div class="pagination-controls">
+                            <button onclick="goToFirstPage()" id="btnFirst">首页</button>
+                            <button onclick="goToPrevPage()" id="btnPrev">上一页</button>
+
+                            <span id="pageInfo">第 <span id="currentPage">1</span> / <span id="totalPages">1</span> 页</span>
+
+                            <button onclick="goToNextPage()" id="btnNext">下一页</button>
+                            <button onclick="goToLastPage()" id="btnLast">末页</button>
+
+                            <span style="margin-left: 15px;">
+            跳转到 <input type="number" id="jumpPage" min="1" style="width: 60px; padding: 4px 8px; margin: 0 5px;"> 页
+            <button onclick="jumpToPage()">确定</button>
+        </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="page-dish" class="page-content">
+            <div class="category-container">
+                <div class="category-header">
+                    <h2>菜品管理</h2>
+                    <button class="btn btn-primary" onclick="openAddDishDialog()">+ 新增菜品</button>
+                </div>
+
+                <div class="category-table-container">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>菜品名称</th>
+                            <th>图片</th>
+                            <th>所属分类</th>
+                            <th>价格</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr><td colspan="6" style="text-align: center; color: #999;">暂无数据</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-setmeal" class="page-content">
+            <div class="category-container">
+                <div class="category-header">
+                    <h2>套餐管理</h2>
+                    <button class="btn btn-primary" onclick="alert('套餐管理功能待开发')">+ 新增套餐</button>
+                </div>
+                <div class="category-table-container">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>套餐名称</th>
+                            <th>图片</th>
+                            <th>所属分类</th>
+                            <th>价格</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr><td colspan="6" style="text-align: center; color: #999;">暂无数据</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-orderDetail" class="page-content">
+            <div class="category-container">
+                <div class="category-header">
+                    <h2>订单明细</h2>
+                </div>
+                <div class="category-table-container">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>订单号</th>
+                            <th>下单时间</th>
+                            <th>用户信息</th>
+                            <th>总金额</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr><td colspan="6" style="text-align: center; color: #999;">暂无数据</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="addCategoryDialog" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="dialogTitle">新增分类</h3>
+            <span class="close-btn" onclick="closeDialog()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="categoryForm">
+                <input type="hidden" id="categoryType" name="type">
+                <div class="form-group">
+                    <label for="categoryName">分类名称 <span class="required">*</span></label>
+                    <input type="text" id="categoryName" name="name" placeholder="请输入分类名称" required>
+                </div>
+                <div class="form-group">
+                    <label for="categorySort">排序 <span class="required">*</span></label>
+                    <input type="number" id="categorySort" name="sort" placeholder="请输入排序值" value="1" min="0" required>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" onclick="closeDialog()">取消</button>
+            <button class="btn btn-primary" onclick="saveAndContinue()">保存并继续添加</button>
+            <button class="btn btn-success" onclick="saveCategory()">确定</button>
+        </div>
+    </div>
+</div>
+
+<!-- 修改菜品弹窗 -->
+<div id="editDishDialog" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <h3>修改菜品</h3>
+            <span class="close-btn" onclick="closeEditDishDialog()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="dishForm">
+                <input type="hidden" id="dishId" name="id">
+
+                <div class="form-group">
+                    <label for="dishName">菜品名称 <span class="required">*</span></label>
+                    <input type="text" id="dishName" name="name" placeholder="请输入菜品名称" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="dishCategory">所属分类 <span class="required">*</span></label>
+                    <select id="dishCategory" name="categoryId" required>
+                        <option value="">请选择分类</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="dishPrice">菜品价格 <span class="required">*</span></label>
+                    <input type="number" id="dishPrice" name="price" placeholder="请输入价格(单位:分)" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="dishCode">商品编码</label>
+                    <input type="text" id="dishCode" name="code" placeholder="请输入商品编码">
+                </div>
+
+                <div class="form-group">
+                    <label for="dishImage">菜品图片 <span class="required">*</span></label>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <img id="dishImagePreview" src="" alt="菜品图片" style="width: 100px; height: 80px; object-fit: cover; display: none; border: 1px solid #ddd; border-radius: 4px;">
+                        <input type="file" id="dishImageFile" accept="image/*" onchange="previewDishImage(this)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="dishDescription">菜品描述</label>
+                    <textarea id="dishDescription" name="description" rows="3" placeholder="请输入菜品描述"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>口味配置</label>
+                    <button type="button" class="btn btn-primary" onclick="addFlavor()" style="margin-bottom: 10px;">+ 添加口味</button>
+                    <div id="flavorContainer">
+                        <!-- 口味项将动态添加到这里 -->
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" onclick="closeEditDishDialog()">取消</button>
+            <button class="btn btn-success" onclick="saveDish()">确定</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="/js/main.js"></script>
+</body>
+</html>
