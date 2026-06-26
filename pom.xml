@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.xzcit</groupId>
-    <artifactId>LiangXiaoYue</artifactId>
+    <artifactId>ZhangMengLing</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
-    <name>LiangXiaoYue</name>
-    <description>LiangXiaoYue</description>
+    <name>ZhangMengLing</name>
+    <description>ZhangMengLing</description>
     <properties>
         <java.version>11</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -118,7 +118,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
-                    <mainClass>com.xzcit.liangxiaoyue.LiangXiaoYueApplication</mainClass>
+                    <mainClass>com.xzcit.zhangmengling.ZhangMengLingApplication</mainClass>
                     <skip>true</skip>
                 </configuration>
                 <executions>

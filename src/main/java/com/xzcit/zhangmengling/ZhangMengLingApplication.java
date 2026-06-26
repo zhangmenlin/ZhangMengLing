@@ -1,3 +1,4 @@
+// 第一行补上，和文件夹路径对应
 package com.xzcit.zhangmengling;
 
 import org.mybatis.spring.annotation.MapperScan;
@@ -9,9 +10,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @MapperScan("com.xzcit.zhangmengling.mapper")
 public class ZhangMengLingApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(ZhangMengLingApplication.class, args);
     }
-
 }

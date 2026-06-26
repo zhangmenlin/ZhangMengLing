@@ -3,281 +3,1651 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>后台管理系统</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>尚食斋 - 后台管理系统</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .page-box {
+            display: none;
+        }
+        .page-box.active {
+            display: block;
+        }
+        .flavor-item {
+            margin: 12px 0;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .del-flavor {
+            color: red;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 <body>
-<header class="admin-header">
-    <div class="header-logo">
-        <img src="/images/LOGO.jpg" alt="logo">
-    </div>
-    <div class="header-user">
-        <span>超级管理员</span>
-        <a href="/backend/page/login.html">退出登录</a>
+<header class="page-header">
+    <div class="header-title">分类管理</div>
+    <div class="user-dropdown-wrap">
+        <div class="user-btn">
+            <span id="userName">管理员</span>
+            <span>▼</span>
+        </div>
+        <ul class="user-dropdown">
+            <li onclick="alert('个人中心功能开发中')">个人中心</li>
+            <li onclick="alert('修改密码功能开发中')">修改密码</li>
+            <li onclick="logout()">退出登录</li>
+        </ul>
     </div>
 </header>
 
-<div class="admin-body">
-    <aside class="admin-sidebar">
-        <ul class="nav-list">
-            <li class="nav-item active">
-                <a href="#" data-page="category">
-                    <img src="/images/image04.jpg" style="width:18px;margin-right:8px;">
-                    分类管理
-                </a>
+<div class="main-container">
+    <nav class="sidebar-nav">
+        <div class="sidebar-logo">
+            <img src="images/LOGO.jpg" alt="尚食斋 logo" width="40" height="40"/>
+            <span>尚食斋</span>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <div class="nav-parent" onclick="switchPage('category');setActive(this)">
+                    <i>▦</i>
+                    <span>分类管理</span>
+                </div>
             </li>
             <li class="nav-item">
-                <a href="#" data-page="dish">
-                    <img src="/images/image02.jpg" style="width:18px;margin-right:8px;">
-                    菜品管理
-                </a>
+                <div class="nav-parent" onclick="switchPage('dishList');setActive(this)">
+                    <i>🍽</i>
+                    <span>菜品管理</span>
+                </div>
             </li>
             <li class="nav-item">
-                <a href="#" data-page="setmeal">
-                    <img src="/images/image02.jpg" style="width:18px;margin-right:8px;">
-                    套餐管理
-                </a>
+                <div class="nav-parent">
+                    <i>🎁</i>
+                    <span>套餐管理</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <ul class="nav-submenu">
+                    <li onclick="switchPage('setmealList');setActive(this.closest('.nav-item').querySelector('.nav-parent'))">套餐列表</li>
+                    <li onclick="window.editSetmealId=null;switchPage('addSetmeal');setActive(this.closest('.nav-item').querySelector('.nav-parent'))">创建套餐</li>
+                    <li onclick="alert('套餐折扣功能开发中')">套餐折扣</li>
+                </ul>
             </li>
             <li class="nav-item">
-                <a href="#" data-page="orderDetail">
-                    <img src="/images/image03.jpg" style="width:18px;margin-right:8px;">
-                    订单明细
-                </a>
+                <div class="nav-parent">
+                    <i>📋</i>
+                    <span>订单明细</span>
+                </div>
+            </li>
+            <li class="nav-item">
+                <div class="nav-parent">
+                    <i>👤</i>
+                    <span>员工管理</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <ul class="nav-submenu">
+                    <li>员工列表</li>
+                    <li>权限分配</li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <div class="nav-parent">
+                    <i>📊</i>
+                    <span>数据统计</span>
+                </div>
             </li>
         </ul>
-    </aside>
+    </nav>
 
-    <main class="admin-main">
-        <div id="page-category" class="page-content active">
-            <div class="category-container">
-                <div class="category-header">
-                    <h2>分类管理</h2>
-                    <div class="category-buttons">
-                        <button class="btn btn-primary" onclick="openAddDialog(1)">+ 新增菜品分类</button>
-                        <button class="btn btn-success" onclick="openAddDialog(2)">+ 新增套餐分类</button>
-                    </div>
-                </div>
-
-                <div class="category-tabs">
-                    <div class="tab-item active" onclick="switchTab(1)">菜品分类</div>
-                    <div class="tab-item" onclick="switchTab(2)">套餐分类</div>
-                </div>
-
-                <div class="category-table-container">
-                    <table class="data-table">
-                        <thead>
-                        <tr>
-                            <th>分类名称</th>
-                            <th>排序</th>
-                            <th>操作</th>
-                        </tr>
-                        </thead>
-                        <tbody id="categoryTableBody">
-                        </tbody>
-                    </table>
-                    <!-- 在表格 </table> 标签后添加 -->
-                    <div class="pagination-container">
-                        <div class="pagination-info">
-                            共 <span id="totalRecords">0</span> 条记录，每页
-                            <select id="pageSizeSelect" onchange="changePageSize()">
-                                <option value="5">5</option>
-                                <option value="10" selected>10</option>
-                                <option value="20">20</option>
-                                <option value="50">50</option>
-                            </select>
-                            条
-                        </div>
-
-                        <div class="pagination-controls">
-                            <button onclick="goToFirstPage()" id="btnFirst">首页</button>
-                            <button onclick="goToPrevPage()" id="btnPrev">上一页</button>
-
-                            <span id="pageInfo">第 <span id="currentPage">1</span> / <span id="totalPages">1</span> 页</span>
-
-                            <button onclick="goToNextPage()" id="btnNext">下一页</button>
-                            <button onclick="goToLastPage()" id="btnLast">末页</button>
-
-                            <span style="margin-left: 15px;">
-            跳转到 <input type="number" id="jumpPage" min="1" style="width: 60px; padding: 4px 8px; margin: 0 5px;"> 页
-            <button onclick="jumpToPage()">确定</button>
-        </span>
-                        </div>
-                    </div>
-
-                </div>
+    <section class="content-wrap">
+        <!-- 页面1：分类管理 -->
+        <div id="categoryPage" class="page-box active">
+            <h2 class="content-title">分类管理</h2>
+            <div class="operate-bar">
+                <input type="text" class="search-input" placeholder="搜索分类名称...">
+                <button class="btn btn-black" id="addDishBtn">+ 新增菜品分类</button>
+                <button class="btn btn-yellow" id="addSetBtn">+ 新增套餐分类</button>
+                <button class="btn btn-blue">批量删除</button>
             </div>
-        </div>
-
-        <div id="page-dish" class="page-content">
-            <div class="category-container">
-                <div class="category-header">
-                    <h2>菜品管理</h2>
-                    <button class="btn btn-primary" onclick="openAddDishDialog()">+ 新增菜品</button>
-                </div>
-
-                <div class="category-table-container">
-                    <table class="data-table">
-                        <thead>
-                        <tr>
-                            <th>菜品名称</th>
-                            <th>图片</th>
-                            <th>所属分类</th>
-                            <th>价格</th>
-                            <th>状态</th>
-                            <th>操作</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr><td colspan="6" style="text-align: center; color: #999;">暂无数据</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="page-setmeal" class="page-content">
-            <div class="category-container">
-                <div class="category-header">
-                    <h2>套餐管理</h2>
-                    <button class="btn btn-primary" onclick="alert('套餐管理功能待开发')">+ 新增套餐</button>
-                </div>
-                <div class="category-table-container">
-                    <table class="data-table">
-                        <thead>
-                        <tr>
-                            <th>套餐名称</th>
-                            <th>图片</th>
-                            <th>所属分类</th>
-                            <th>价格</th>
-                            <th>状态</th>
-                            <th>操作</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr><td colspan="6" style="text-align: center; color: #999;">暂无数据</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="page-orderDetail" class="page-content">
-            <div class="category-container">
-                <div class="category-header">
-                    <h2>订单明细</h2>
-                </div>
-                <div class="category-table-container">
-                    <table class="data-table">
-                        <thead>
-                        <tr>
-                            <th>订单号</th>
-                            <th>下单时间</th>
-                            <th>用户信息</th>
-                            <th>总金额</th>
-                            <th>状态</th>
-                            <th>操作</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr><td colspan="6" style="text-align: center; color: #999;">暂无数据</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </main>
-</div>
-
-<div id="addCategoryDialog" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 id="dialogTitle">新增分类</h3>
-            <span class="close-btn" onclick="closeDialog()">&times;</span>
-        </div>
-        <div class="modal-body">
-            <form id="categoryForm">
-                <input type="hidden" id="categoryType" name="type">
-                <div class="form-group">
-                    <label for="categoryName">分类名称 <span class="required">*</span></label>
-                    <input type="text" id="categoryName" name="name" placeholder="请输入分类名称" required>
-                </div>
-                <div class="form-group">
-                    <label for="categorySort">排序 <span class="required">*</span></label>
-                    <input type="number" id="categorySort" name="sort" placeholder="请输入排序值" value="1" min="0" required>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-default" onclick="closeDialog()">取消</button>
-            <button class="btn btn-primary" onclick="saveAndContinue()">保存并继续添加</button>
-            <button class="btn btn-success" onclick="saveCategory()">确定</button>
-        </div>
-    </div>
-</div>
-
-<!-- 修改菜品弹窗 -->
-<div id="editDishDialog" class="modal">
-    <div class="modal-content" style="max-width: 800px;">
-        <div class="modal-header">
-            <h3>修改菜品</h3>
-            <span class="close-btn" onclick="closeEditDishDialog()">&times;</span>
-        </div>
-        <div class="modal-body">
-            <form id="dishForm">
-                <input type="hidden" id="dishId" name="id">
-
-                <div class="form-group">
-                    <label for="dishName">菜品名称 <span class="required">*</span></label>
-                    <input type="text" id="dishName" name="name" placeholder="请输入菜品名称" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="dishCategory">所属分类 <span class="required">*</span></label>
-                    <select id="dishCategory" name="categoryId" required>
-                        <option value="">请选择分类</option>
+            <div class="table-box">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>分类名称</th>
+                        <th>分类类型</th>
+                        <th>操作时间</th>
+                        <th>排序</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="empty-row">
+                        <td colspan="5">暂无数据</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="page-pagination">
+                    <span>共 0 条</span>
+                    <select class="page-size">
+                        <option>10条/页</option>
+                        <option>20条/页</option>
+                        <option>50条/页</option>
                     </select>
+                    <button class="page-btn">&lt;</button>
+                    <span class="current-page">1</span>
+                    <button class="page-btn">&gt;</button>
+                    <span>前往</span>
+                    <input type="number" class="page-input" value="1">
+                    <span>页</span>
                 </div>
-
-                <div class="form-group">
-                    <label for="dishPrice">菜品价格 <span class="required">*</span></label>
-                    <input type="number" id="dishPrice" name="price" placeholder="请输入价格(单位:分)" min="0" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="dishCode">商品编码</label>
-                    <input type="text" id="dishCode" name="code" placeholder="请输入商品编码">
-                </div>
-
-                <div class="form-group">
-                    <label for="dishImage">菜品图片 <span class="required">*</span></label>
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <img id="dishImagePreview" src="" alt="菜品图片" style="width: 100px; height: 80px; object-fit: cover; display: none; border: 1px solid #ddd; border-radius: 4px;">
-                        <input type="file" id="dishImageFile" accept="image/*" onchange="previewDishImage(this)">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="dishDescription">菜品描述</label>
-                    <textarea id="dishDescription" name="description" rows="3" placeholder="请输入菜品描述"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>口味配置</label>
-                    <button type="button" class="btn btn-primary" onclick="addFlavor()" style="margin-bottom: 10px;">+ 添加口味</button>
-                    <div id="flavorContainer">
-                        <!-- 口味项将动态添加到这里 -->
-                    </div>
-                </div>
-            </form>
+            </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-default" onclick="closeEditDishDialog()">取消</button>
-            <button class="btn btn-success" onclick="saveDish()">确定</button>
+
+        <!-- 页面2：菜品列表 -->
+        <div id="dishListPage" class="page-box">
+            <h2 class="content-title">菜品管理</h2>
+            <div class="operate-bar">
+                <input type="text" id="dishSearchInput" class="search-input" placeholder="请输入菜品名称">
+                <div class="btn-group">
+                    <button class="btn btn-blue" onclick="statusHandle('1')">批量启售</button>
+                    <button class="btn btn-stop" onclick="statusHandle('0')">批量停售</button>
+                    <button class="btn btn-del" onclick="deleteHandle('批量',null)">批量删除</button>
+                    <button class="btn btn-yellow" onclick="window.editDishId=null;switchPage('addDish')">+ 新增菜品</button>
+                </div>
+            </div>
+            <div class="table-box">
+                <table>
+                    <thead>
+                    <tr>
+                        <th><input type="checkbox" id="checkAll"></th>
+                        <th>菜品名称</th>
+                        <th>图片</th>
+                        <th>菜品分类</th>
+                        <th>售价</th>
+                        <th>售卖状态</th>
+                        <th>最后操作时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="dishTableBody">
+                    <tr class="empty-row">
+                        <td colspan="8">暂无数据</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="page-pagination">
+                    <span id="dishTotalText">共 0 条</span>
+                    <select id="dishPageSizeSelect" class="page-size">
+                        <option value="10">10条/页</option>
+                        <option value="20">20条/页</option>
+                        <option value="50">50条/页</option>
+                    </select>
+                    <button class="page-btn" id="dishPrevBtn">&lt;</button>
+                    <span class="current-page" id="dishCurrentPage">1</span>
+                    <button class="page-btn" id="dishNextBtn">&gt;</button>
+                    <span>前往</span>
+                    <input type="number" class="page-input" id="dishJumpPage" value="1">
+                    <span>页</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页面3：新增菜品 -->
+        <div id="addDishPage" class="page-box">
+            <div style="display:flex;align-items:center;margin-bottom:20px;">
+                <button onclick="switchPage('dishList')">← 返回</button>
+                <h3 style="margin-left:10px;">新增菜品</h3>
+            </div>
+
+            <div class="form-item" style="margin:15px 0;">
+                <label>*菜品名称：</label>
+                <input id="dishName" type="text" placeholder="请填写菜品名称">
+                <label style="margin-left:30px;">*菜品分类：</label>
+                <select id="dishCategory">
+                    <option value="">请选择菜品分类</option>
+                </select>
+            </div>
+
+            <div class="form-item" style="margin:15px 0;">
+                <label>*菜品价格：</label>
+                <input id="dishPrice" type="number" placeholder="请设置菜品价格">
+            </div>
+
+            <div class="form-item" style="margin:15px 0;">
+                <label>口味做法配置：</label>
+                <button class="btn btn-yellow" id="addFlavorBtn">+ 添加口味</button>
+                <div id="flavorBox"></div>
+            </div>
+
+            <div class="form-item" style="margin:15px 0;">
+                <label>*菜品图片：</label>
+                <div id="imgBox" style="border:1px dashed #ccc;width:160px;height:160px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                    上传图片
+                </div>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            </div>
+
+            <div class="form-item" style="margin:15px 0;">
+                <label>菜品描述：</label>
+                <textarea id="dishDesc" placeholder="菜品描述，最长200字" rows="4" style="width:450px;"></textarea>
+            </div>
+
+            <div style="margin-top:30px;">
+                <button class="btn btn-gray" onclick="window.editDishId=null;switchPage('dishList')">取消</button>
+                <button id="saveBtn" class="btn btn-yellow">保存</button>
+                <button class="btn btn-black">保存并继续新增菜品</button>
+            </div>
+        </div>
+
+        <!-- 页面：套餐列表 -->
+        <div id="setmealListPage" class="page-box">
+            <h2 class="content-title">套餐管理</h2>
+            <div class="operate-bar">
+                <input type="text" id="setmealSearchInput" class="search-input" placeholder="请输入套餐名称">
+                <div class="btn-group">
+                    <button class="btn btn-blue" onclick="setmealStatusHandle('1')">批量启用</button>
+                    <button class="btn btn-stop" onclick="setmealStatusHandle('0')">批量停用</button>
+                    <button class="btn btn-del" onclick="setmealDeleteHandle('批量',null)">批量删除</button>
+                    <button class="btn btn-yellow" onclick="window.editSetmealId=null;switchPage('addSetmeal')">+ 新增套餐</button>
+                </div>
+            </div>
+            <div class="table-box">
+                <table>
+                    <thead>
+                    <tr>
+                        <th><input type="checkbox" id="setmealCheckAll"></th>
+                        <th>套餐名称</th>
+                        <th>图片</th>
+                        <th>套餐分类</th>
+                        <th>售价</th>
+                        <th>售卖状态</th>
+                        <th>最后操作时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="setmealTableBody">
+                    <tr class="empty-row">
+                        <td colspan="8">暂无数据</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="page-pagination">
+                    <span id="setmealTotalText">共 0 条</span>
+                    <select id="setmealPageSizeSelect" class="page-size">
+                        <option value="10">10条/页</option>
+                        <option value="20">20条/页</option>
+                        <option value="50">50条/页</option>
+                    </select>
+                    <button class="page-btn" id="setmealPrevBtn">&lt;</button>
+                    <span class="current-page" id="setmealCurrentPage">1</span>
+                    <button class="page-btn" id="setmealNextBtn">&gt;</button>
+                    <span>前往</span>
+                    <input type="number" class="page-input" id="setmealJumpPage" value="1">
+                    <span>页</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页面：新增/修改套餐 -->
+        <div id="addSetmealPage" class="page-box">
+            <div style="display:flex;align-items:center;margin-bottom:20px;">
+                <button onclick="window.editSetmealId=null;switchPage('setmealList')">← 返回</button>
+                <h3 id="setmealFormTitle" style="margin-left:10px;">新增套餐</h3>
+            </div>
+
+            <div class="form-item" style="margin:15px 0;">
+                <label>*套餐名称：</label>
+                <input id="setmealName" type="text" placeholder="请填写套餐名称">
+                <label style="margin-left:30px;">*套餐分类：</label>
+                <select id="setmealCategory">
+                    <option value="">请选择套餐分类</option>
+                </select>
+            </div>
+
+            <div class="form-item" style="margin:15px 0;">
+                <label>*套餐价格：</label>
+                <input id="setmealPrice" type="number" placeholder="请设置套餐价格（元）">
+            </div>
+
+            <div class="form-item" style="margin:15px 0;">
+                <label>*套餐图片：</label>
+                <div id="setmealImgBox" style="border:1px dashed #ccc;width:160px;height:160px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                    上传图片
+                </div>
+                <input type="file" id="setmealFileInput" accept="image/*" style="display: none;">
+            </div>
+
+            <div class="form-item" style="margin:15px 0;">
+                <label>套餐描述：</label>
+                <textarea id="setmealDesc" placeholder="套餐描述，最长200字" rows="4" style="width:450px;"></textarea>
+            </div>
+
+            <div class="form-item" style="margin:15px 0;">
+                <label>已选菜品：</label>
+                <button class="btn btn-yellow" id="addDishToSetmealBtn">+ 添加菜品</button>
+                <table id="setmealDishTable" style="margin-top:10px;width:650px;">
+                    <thead>
+                    <tr>
+                        <th>菜品名称</th>
+                        <th>单价（元）</th>
+                        <th>份数</th>
+                        <th>排序</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="setmealDishTbody">
+                    <tr class="empty-row"><td colspan="5">暂无菜品，请点击"添加菜品"</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top:30px;">
+                <button class="btn btn-gray" onclick="window.editSetmealId=null;switchPage('setmealList')">取消</button>
+                <button id="saveSetmealBtn" class="btn btn-yellow">保存</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- 分类弹窗 -->
+<div class="mask" id="modalMask">
+    <div class="modal">
+        <h3 class="modal-title">新增菜品分类</h3>
+        <div class="modal-item">
+            <label>分类名称</label>
+            <input type="text" placeholder="请输入分类名称" id="inputName">
+        </div>
+        <div class="modal-item">
+            <label>排序序号</label>
+            <input type="number" value="1" id="inputSort">
+        </div>
+        <div class="modal-btns">
+            <button class="btn btn-gray" id="closeModal">取消</button>
+            <button class="btn btn-yellow" id="submitBtn">确认新增</button>
         </div>
     </div>
 </div>
 
+<!-- 编辑菜品弹窗 -->
+<div class="mask" id="editDishMask" style="display:none;">
+    <div class="modal" style="width:600px;">
+        <h3 class="modal-title">编辑菜品</h3>
 
-<script src="/js/main.js"></script>
-</body>
-</html>
+        <div class="form-item" style="margin:15px 0;">
+            <label>*菜品名称：</label>
+            <input id="editDishName" type="text" placeholder="请填写菜品名称">
+        </div>
+        <div class="form-item" style="margin:15px 0;">
+            <label>*菜品分类：</label>
+            <select id="editDishCategory">
+                <option value="">请选择菜品分类</option>
+            </select>
+        </div>
+        <div class="form-item" style="margin:15px 0;">
+            <label>*菜品价格：</label>
+            <input id="editDishPrice" type="number" placeholder="请设置菜品价格">
+        </div>
+
+        <div class="form-item" style="margin:15px 0;">
+            <label>口味做法配置：</label>
+            <button class="btn btn-yellow" id="editAddFlavorBtn">+ 添加口味</button>
+            <div id="editFlavorBox"></div>
+        </div>
+
+        <div class="form-item" style="margin:15px 0;">
+            <label>*菜品图片：</label>
+            <div id="editImgBox" style="border:1px dashed #ccc;width:160px;height:160px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                上传图片
+            </div>
+            <input type="file" id="editFileInput" accept="image/*" style="display: none;">
+        </div>
+
+        <div class="form-item" style="margin:15px 0;">
+            <label>菜品描述：</label>
+            <textarea id="editDishDesc" placeholder="菜品描述，最长200字" rows="4" style="width:450px;"></textarea>
+        </div>
+
+        <div class="modal-btns">
+            <button class="btn btn-gray" id="closeEditDishModal">取消</button>
+            <button class="btn btn-yellow" id="saveEditDishBtn">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 添加菜品到套餐弹窗 -->
+<div class="mask" id="pickDishMask" style="display:none;">
+    <div class="modal" style="width:600px;">
+        <h3 class="modal-title">选择菜品</h3>
+        <div style="max-height:400px;overflow-y:auto;">
+            <table>
+                <thead>
+                <tr>
+                    <th>选择</th>
+                    <th>菜品名称</th>
+                    <th>分类</th>
+                    <th>单价（元）</th>
+                </tr>
+                </thead>
+                <tbody id="pickDishTbody"></tbody>
+            </table>
+        </div>
+        <div class="modal-btns">
+            <button class="btn btn-gray" id="closePickDishMask">取消</button>
+            <button class="btn btn-yellow" id="confirmPickDish">确认添加</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let checkList = [];
+    let imagePath = '';
+    let currentEditDishId = null;
+    let editImagePath = '';
+
+    let setmealPage = 1;
+    let setmealPageSize = 10;
+    let setmealTotal = 0;
+    let setmealName = "";
+    let editSetmealId = null;
+    window.editSetmealId = null;
+    let setmealCheckList = [];
+    let setmealImagePath = '';
+    let selectedSetmealDishes = [];
+
+    function switchPage(pageKey) {
+        document.querySelectorAll('.page-box').forEach(el => el.classList.remove('active'));
+        if (pageKey === 'category') {
+            document.getElementById('categoryPage').classList.add('active');
+            document.querySelector('.page-header .header-title').innerText = '分类管理';
+        } else if (pageKey === 'dishList') {
+            document.getElementById('dishListPage').classList.add('active');
+            document.querySelector('.page-header .header-title').innerText = '菜品管理';
+            window.editDishId = null;
+            dishPage = 1;
+            getDishPage();
+        } else if (pageKey === 'addDish') {
+            document.getElementById('addDishPage').classList.add('active');
+            editDishId = window.editDishId;
+            loadDishCategories().then(() => {
+                if (editDishId) {
+                    document.querySelector('.page-header .header-title').innerText = '修改菜品';
+                    getDishDetailById(editDishId);
+                } else {
+                    document.querySelector('.page-header .header-title').innerText = '新增菜品';
+                    clearDishForm();
+                }
+            });
+        } else if (pageKey === 'setmealList') {
+            document.getElementById('setmealListPage').classList.add('active');
+            document.querySelector('.page-header .header-title').innerText = '套餐管理';
+            window.editSetmealId = null;
+            setmealPage = 1;
+            getSetmealPage();
+        } else if (pageKey === 'addSetmeal') {
+            document.getElementById('addSetmealPage').classList.add('active');
+            editSetmealId = window.editSetmealId;
+            loadSetmealCategories().then(() => {
+                if (editSetmealId) {
+                    document.getElementById('setmealFormTitle').innerText = '修改套餐';
+                    document.querySelector('.page-header .header-title').innerText = '修改套餐';
+                    getSetmealDetailById(editSetmealId);
+                } else {
+                    document.getElementById('setmealFormTitle').innerText = '新增套餐';
+                    document.querySelector('.page-header .header-title').innerText = '新增套餐';
+                    clearSetmealForm();
+                }
+            });
+        }
+    }
+
+    function setActive(currentDom) {
+        document.querySelectorAll('.nav-parent').forEach(item => {
+            item.classList.remove('active');
+        })
+        currentDom.classList.add('active');
+    }
+
+    const flavorBox = document.getElementById('flavorBox');
+    document.getElementById('addFlavorBtn').addEventListener('click', function () {
+        let item = document.createElement('div');
+        item.className = 'flavor-item';
+        item.innerHTML = `
+            <div>
+                <p>口味名（3个字内）</p>
+                <input type="text" placeholder="请输入口味" maxlength="3">
+            </div>
+            <div style="flex:1;">
+                <p>口味标签（输入标签回车添加）</p>
+                <input type="text" style="width:100%;">
+            </div>
+            <span class="del-flavor">删除</span>
+        `;
+        flavorBox.appendChild(item);
+        item.querySelector('.del-flavor').onclick = () => item.remove();
+    })
+
+    let page = 1;
+    let pageSize = 10;
+    let total = 0;
+    let operateType = "add";
+    let editId = null;
+    let categoryType = 1;
+
+    let dishPage = 1;
+    let dishPageSize = 10;
+    let dishTotal = 0;
+    let dishName = "";
+    let editDishId = null;
+    window.editDishId = null;
+
+    const mask = document.getElementById('modalMask');
+    const modalTitle = mask.querySelector('.modal-title');
+    const inputName = document.getElementById('inputName');
+    const inputSort = document.getElementById('inputSort');
+    const submitBtn = document.getElementById('submitBtn');
+    const closeModal = document.getElementById('closeModal');
+    const addDishBtn = document.getElementById('addDishBtn');
+    const addSetBtn = document.getElementById('addSetBtn');
+
+    window.addEventListener('DOMContentLoaded', function () {
+        const userInfo = localStorage.getItem('userInfo');
+        if (!userInfo) {
+            alert('请先登录');
+            window.location.href = '/backend/page/login.html';
+            return;
+        }
+        const user = JSON.parse(userInfo);
+        if (user && user.name) {
+            const userSpan = document.querySelector('.user-btn span:first-child');
+            if (userSpan) userSpan.textContent = user.name;
+        }
+        getCategoryPage();
+        bindAllEvent();
+    });
+
+    function bindAllEvent() {
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            const parent = item.querySelector('.nav-parent');
+            if (item.querySelector('.nav-submenu')) {
+                parent.addEventListener('click', () => {
+                    item.classList.toggle('open');
+                })
+            }
+        })
+
+        addDishBtn.addEventListener('click', () => {
+            operateType = "add";
+            categoryType = 1;
+            modalTitle.innerText = '新增菜品分类';
+            submitBtn.innerText = "确认新增";
+            inputName.value = "";
+            inputSort.value = "1";
+            mask.style.display = 'flex';
+        })
+
+        addSetBtn.addEventListener('click', () => {
+            operateType = "add";
+            categoryType = 2;
+            modalTitle.innerText = '新增套餐分类';
+            submitBtn.innerText = "确认新增";
+            inputName.value = "";
+            inputSort.value = "1";
+            mask.style.display = 'flex';
+        })
+
+        closeModal.addEventListener('click', () => mask.style.display = 'none');
+        mask.addEventListener('click', (e) => {
+            if (e.target === mask) mask.style.display = 'none';
+        })
+
+        submitBtn.addEventListener('click', submitCategory);
+
+        document.querySelector('.page-pagination .page-btn:first-of-type').addEventListener('click', () => {
+            if (page > 1) { page--; getCategoryPage(); }
+        })
+        document.querySelector('.page-pagination .page-btn:last-of-type').addEventListener('click', () => {
+            const maxPage = Math.ceil(total / pageSize);
+            if (page < maxPage) { page++; getCategoryPage(); }
+        })
+        document.querySelector('.page-size').addEventListener('change', function () {
+            pageSize = Number(this.value);
+            page = 1;
+            getCategoryPage();
+        })
+        document.querySelector('.page-input').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                let targetPage = Number(this.value);
+                const maxPage = Math.ceil(total / pageSize);
+                if (targetPage >= 1 && targetPage <= maxPage) { page = targetPage; getCategoryPage(); }
+            }
+        })
+
+        document.getElementById("dishPrevBtn").addEventListener("click", function () {
+            if (dishPage > 1) { dishPage--; getDishPage(); }
+        })
+        document.getElementById("dishNextBtn").addEventListener("click", function () {
+            let maxPage = Math.ceil(dishTotal / dishPageSize);
+            if (dishPage < maxPage) { dishPage++; getDishPage(); }
+        })
+        document.getElementById("dishPageSizeSelect").addEventListener("change", function () {
+            dishPageSize = Number(this.value);
+            dishPage = 1;
+            getDishPage();
+        })
+        document.getElementById("dishJumpPage").addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                let jumpNum = Number(this.value);
+                let maxPage = Math.ceil(dishTotal / dishPageSize);
+                if (jumpNum >= 1 && jumpNum <= maxPage) { dishPage = jumpNum; getDishPage(); }
+            }
+        })
+        document.getElementById("dishSearchInput").addEventListener("keydown", function (e) {
+            if (e.key === "Enter") { dishPage = 1; getDishPage(); }
+        })
+
+        document.getElementById('saveBtn').onclick = saveDish;
+
+        document.getElementById('checkAll').onchange = function () {
+            let itemChecks = document.querySelectorAll('#dishTableBody input[type="checkbox"]');
+            checkList = [];
+            itemChecks.forEach(cb => {
+                cb.checked = this.checked;
+                if (cb.checked) checkList.push(cb.dataset.id);
+            })
+        }
+
+        document.getElementById('imgBox').onclick = function () {
+            document.getElementById('fileInput').click();
+        };
+        document.getElementById('fileInput').onchange = function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('file', file);
+            axios({
+                url: "/common/upload",
+                method: "POST",
+                data: formData
+            }).then(res => {
+                if (String(res.data.code) === '1') {
+                    imagePath = res.data.data;
+                    document.getElementById('imgBox').innerHTML = `<img src="/common/download?name=${imagePath}" style="width:100%;height:100%;object-fit:cover;">`;
+                } else {
+                    alert("图片上传失败");
+                }
+            }).catch(err => {
+                alert("上传请求异常：" + err);
+            })
+        }
+
+        document.getElementById("setmealPrevBtn").addEventListener("click", function () {
+            if (setmealPage > 1) { setmealPage--; getSetmealPage(); }
+        })
+        document.getElementById("setmealNextBtn").addEventListener("click", function () {
+            let maxPage = Math.ceil(setmealTotal / setmealPageSize);
+            if (setmealPage < maxPage) { setmealPage++; getSetmealPage(); }
+        })
+        document.getElementById("setmealPageSizeSelect").addEventListener("change", function () {
+            setmealPageSize = Number(this.value);
+            setmealPage = 1;
+            getSetmealPage();
+        })
+        document.getElementById("setmealJumpPage").addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                let jumpNum = Number(this.value);
+                let maxPage = Math.ceil(setmealTotal / setmealPageSize);
+                if (jumpNum >= 1 && jumpNum <= maxPage) { setmealPage = jumpNum; getSetmealPage(); }
+            }
+        })
+        document.getElementById("setmealSearchInput").addEventListener("keydown", function (e) {
+            if (e.key === "Enter") { setmealPage = 1; getSetmealPage(); }
+        })
+
+        document.getElementById('saveSetmealBtn').onclick = saveSetmeal;
+
+        document.getElementById('setmealCheckAll').onchange = function () {
+            let itemChecks = document.querySelectorAll('#setmealTableBody input[type="checkbox"]');
+            setmealCheckList = [];
+            itemChecks.forEach(cb => {
+                cb.checked = this.checked;
+                if (cb.checked) setmealCheckList.push(cb.dataset.id);
+            })
+        }
+
+        document.getElementById('setmealImgBox').onclick = function () {
+            document.getElementById('setmealFileInput').click();
+        };
+        document.getElementById('setmealFileInput').onchange = function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('file', file);
+            axios({
+                url: "/common/upload",
+                method: "POST",
+                data: formData
+            }).then(res => {
+                if (String(res.data.code) === '1') {
+                    setmealImagePath = res.data.data;
+                    document.getElementById('setmealImgBox').innerHTML = `<img src="/common/download?name=${setmealImagePath}" style="width:100%;height:100%;object-fit:cover;">`;
+                } else {
+                    alert("图片上传失败");
+                }
+            }).catch(err => {
+                alert("上传请求异常：" + err);
+            })
+        }
+
+        document.getElementById('addDishToSetmealBtn').onclick = openPickDishModal;
+
+        document.getElementById('closePickDishMask').onclick = function () {
+            document.getElementById('pickDishMask').style.display = 'none';
+        };
+        document.getElementById('confirmPickDish').onclick = confirmPickDishes;
+    }
+
+    function getCategoryPage() {
+        axios({
+            url: '/category/page',
+            method: 'get',
+            params: { page, pageSize }
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                const pageData = res.data.data;
+                total = pageData.total;
+                renderTable(pageData.records);
+                renderPagination();
+            } else {
+                alert(res.data.msg || '操作失败');
+            }
+        }).catch(err => {
+            alert('分页请求出错：' + err);
+        })
+    }
+
+    function getDishPage() {
+        dishName = document.getElementById('dishSearchInput').value.trim();
+        axios({
+            url: "/dish/page",
+            method: "GET",
+            params: {
+                page: dishPage,
+                pageSize: dishPageSize,
+                name: dishName || undefined
+            }
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                let pageData = res.data.data;
+                dishTotal = pageData.total;
+                renderDishTable(pageData.records);
+                renderDishPagination();
+            } else {
+                alert(res.data.msg || "查询失败");
+            }
+        }).catch(err => {
+            alert("菜品分页请求出错：" + err);
+        })
+    }
+
+    function renderTable(list) {
+        const tbody = document.querySelector('.table-box tbody');
+        if (list.length === 0) {
+            tbody.innerHTML = `<tr class="empty-row"><td colspan="5">暂无数据</td></tr>`;
+            return;
+        }
+        let html = '';
+        list.forEach(item => {
+            html += `
+                <tr data-id="${item.id}" data-name="${item.name}" data-sort="${item.sort}" data-type="${item.type}">
+                    <td>${item.name}</td>
+                    <td>${item.type === 1 ? '菜品分类' : '套餐分类'}</td>
+                    <td>${item.updateTime}</td>
+                    <td>${item.sort}</td>
+                    <td>
+                        <button class="edit-btn">编辑</button>
+                        <button class="del-btn">删除</button>
+                    </td>
+                </tr>
+            `
+        })
+        tbody.innerHTML = html;
+
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const tr = this.closest('tr');
+                operateType = "edit";
+                editId = tr.dataset.id;
+                categoryType = tr.dataset.type;
+                modalTitle.innerText = "修改分类";
+                submitBtn.innerText = "确认修改";
+                inputName.value = tr.dataset.name;
+                inputSort.value = tr.dataset.sort;
+                mask.style.display = 'flex';
+            })
+        })
+
+        document.querySelectorAll('.del-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const tr = this.closest('tr');
+                if (confirm(`确定要删除分类【${tr.dataset.name}】吗？删除后无法恢复！`)) {
+                    axios({
+                        url: "/category",
+                        method: "delete",
+                        params: { id: tr.dataset.id }
+                    }).then(res => {
+                        if (String(res.data.code) === '1') {
+                            alert("删除成功");
+                            getCategoryPage();
+                        } else {
+                            alert(res.data.msg || "删除失败");
+                        }
+                    }).catch(err => {
+                        alert("删除请求异常：" + err);
+                    })
+                }
+            })
+        })
+    }
+
+    function renderDishTable(list) {
+        let tbody = document.getElementById("dishTableBody");
+        if (list.length === 0) {
+            tbody.innerHTML = `<tr class="empty-row"><td colspan="8">暂无数据</td>`;
+            return;
+        }
+        let html = "";
+        list.forEach(row => {
+            let imgSrc = `/common/download?name=${row.image}`;
+            let statusText = row.status === 1 ? "启售" : "停售";
+            html += `
+                <tr>
+                    <td><input type="checkbox" data-id="${row.id}"></td>
+                    <td>${row.name}</td>
+                    <td><img src="${imgSrc}" style="width:40px;height:40px;"></td>
+                    <td>${row.categoryName}</td>
+                    <td>${(row.price / 100).toFixed(2)}</td>
+                    <td>${statusText}</td>
+                    <td>${row.updateTime}</td>
+                    <td>
+                        <button onclick="goEditDish(${row.id})">修改</button>
+                        <button onclick="statusHandle(${JSON.stringify(row)})">
+                            ${row.status === 0 ? '起售' : '停售'}
+                        </button>
+                        <button onclick="deleteHandle('单删',${row.id})">删除</button>
+                    </td>
+                </tr>
+            `
+        })
+        tbody.innerHTML = html;
+
+        document.querySelectorAll('#dishTableBody input[type="checkbox"]').forEach(cb => {
+            cb.onchange = function () {
+                let id = this.dataset.id;
+                if (this.checked) {
+                    checkList.push(id);
+                } else {
+                    checkList = checkList.filter(item => item !== id);
+                }
+            }
+        })
+    }
+
+    function statusHandle(row) {
+        let params = {};
+        if (typeof row === 'string') {
+            if (checkList.length === 0) {
+                alert('批量操作，请先勾选菜品！');
+                return false;
+            }
+            params.id = checkList.join(',');
+            params.status = row;
+        } else {
+            params.id = row.id;
+            params.status = row.status ? '0' : '1';
+        }
+        if (!confirm("确认更改该菜品状态？")) return;
+        dishStatusByStatus(params).then(res => {
+            if (String(res.data.code) === '1') {
+                alert('菜品状态已经更改成功！');
+                getDishPage();
+                checkList = [];
+            } else {
+                alert(res.data.msg || '操作失败');
+            }
+        }).catch(err => {
+            alert('请求出错了：' + err);
+        })
+    }
+
+    const dishStatusByStatus = (params) => {
+        return axios({
+            url: `/dish/status/${params.status}`,
+            method: 'post',
+            params: { ids: params.id }
+        })
+    }
+
+    function goEditDish(dishId) {
+        currentEditDishId = dishId;
+        document.getElementById('editDishMask').style.display = 'flex';
+        loadEditDishCategories()
+            .then(() => { getDishDetailForModal(dishId); })
+            .catch(e => console.error(e));
+    }
+
+    function getDishDetailById(id) {
+        axios({
+            url: `/dish/${id}`,
+            method: 'GET'
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                fillDishForm(res.data.data);
+            } else {
+                alert(res.data.msg || '查询菜品失败');
+            }
+        }).catch(err => {
+            alert('请求异常：' + err);
+        })
+    }
+
+    function fillDishForm(data) {
+        document.getElementById('dishName').value = data.name;
+        document.getElementById('dishCategory').value = data.categoryId;
+        document.getElementById('dishPrice').value = data.price / 100;
+        const imgUrl = `/common/download?name=${data.image}`;
+        document.getElementById('imgBox').innerHTML = `<img src="${imgUrl}" style="width:160px;height:160px;">`;
+        imagePath = data.image;
+        flavorBox.innerHTML = '';
+        if (data.flavors && data.flavors.length > 0) {
+            data.flavors.forEach(flavor => {
+                let item = document.createElement('div');
+                item.className = 'flavor-item';
+                let tagList = JSON.parse(flavor.value);
+                item.innerHTML = `
+                    <div>
+                        <p>口味名（3个字内）</p>
+                        <input type="text" value="${flavor.name}" maxlength="3">
+                    </div>
+                    <div style="flex:1;">
+                        <p>口味标签（输入标签回车添加）</p>
+                        <input type="text" style="width:100%;" value="${tagList.join(',')}">
+                    </div>
+                    <span class="del-flavor">删除</span>
+                `;
+                flavorBox.appendChild(item);
+                item.querySelector('.del-flavor').onclick = () => item.remove();
+            })
+        }
+    }
+
+    function clearDishForm() {
+        document.getElementById('dishName').value = '';
+        document.getElementById('dishCategory').selectedIndex = 0;
+        document.getElementById('dishPrice').value = '';
+        document.getElementById('imgBox').innerHTML = '上传图片';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('dishDesc').value = '';
+        flavorBox.innerHTML = '';
+        window.editDishId = null;
+        imagePath = '';
+    }
+
+    function loadDishCategories() {
+        return axios({
+            url: '/category',
+            method: 'GET',
+            params: { type: 1 }
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                const list = res.data.data;
+                const select = document.getElementById('dishCategory');
+                select.innerHTML = '<option value="">请选择菜品分类</option>';
+                list.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.id;
+                    opt.textContent = item.name;
+                    select.appendChild(opt);
+                });
+            }
+        }).catch(err => {
+            console.error('加载菜品分类失败：', err);
+        });
+    }
+
+    function saveDish() {
+        const dishName = document.getElementById("dishName").value.trim();
+        const categoryIdVal = document.getElementById("dishCategory").value;
+        const priceVal = document.getElementById("dishPrice").value;
+        const descVal = document.getElementById("dishDesc").value.trim();
+
+        if (!dishName) { alert("请输入菜品名称！"); return; }
+        if (!categoryIdVal) { alert("请选择菜品分类！"); return; }
+        if (!priceVal || Number(priceVal) <= 0) { alert("请输入有效的菜品价格！"); return; }
+        if (!imagePath) { alert("请上传菜品图片！"); return; }
+
+        let params = {
+            name: dishName,
+            categoryId: Number(categoryIdVal),
+            price: Math.round(Number(priceVal) * 100),
+            description: descVal,
+            image: imagePath
+        };
+
+        let flavorList = [];
+        document.querySelectorAll(".flavor-item").forEach(item => {
+            let nameInput = item.querySelector("div:first-child input");
+            let tagInput = item.querySelector("div:nth-child(2) input");
+            if (!nameInput || !tagInput) return;
+            let name = nameInput.value.trim();
+            let tagText = tagInput.value.trim();
+            if (!name && !tagText) return;
+            let tagArr = tagText ? tagText.split(",").map(t => t.trim()).filter(t => t) : [];
+            flavorList.push({ name: name, value: JSON.stringify(tagArr) })
+        });
+        params.flavors = flavorList;
+
+        if (editDishId) {
+            params.id = editDishId;
+            axios({ url: "/dish", method: "PUT", data: params }).then(res => {
+                if (String(res.data.code) === '1') {
+                    alert("菜品修改成功！");
+                    window.editDishId = null;
+                    editDishId = null;
+                    switchPage("dishList");
+                } else { alert(res.data.msg || "操作失败"); }
+            }).catch(err => {
+                console.error("修改菜品出错：", err);
+                alert("请求出错，请检查控制台日志");
+            })
+        } else {
+            params.status = 1;
+            axios({ url: "/dish", method: "POST", data: params }).then(res => {
+                if (String(res.data.code) === '1') {
+                    alert("新增菜品成功！");
+                    window.editDishId = null;
+                    editDishId = null;
+                    switchPage("dishList");
+                } else { alert(res.data.msg || "操作失败"); }
+            }).catch(err => {
+                console.error("新增菜品出错：", err);
+                alert("请求出错，请检查控制台日志");
+            })
+        }
+    }
+
+    function renderPagination() {
+        document.querySelector('.page-pagination span').innerText = `共 ${total} 条`;
+        document.querySelector('.current-page').innerText = page;
+        document.querySelector('.page-input').value = page;
+    }
+
+    function renderDishPagination() {
+        document.getElementById("dishTotalText").innerText = `共 ${dishTotal} 条`;
+        document.getElementById("dishCurrentPage").innerText = dishPage;
+        document.getElementById("dishJumpPage").value = dishPage;
+    }
+
+    function submitCategory() {
+        const name = inputName.value.trim();
+        const sort = Number(inputSort.value);
+        if (!name) { alert("请输入分类名称！"); return; }
+        if (isNaN(sort) || sort <= 0) { alert("排序必须为正整数！"); return; }
+
+        if (operateType === "add") {
+            axios({
+                url: "/category",
+                method: "post",
+                data: { name: name, sort: sort, type: categoryType }
+            }).then(res => {
+                if (String(res.data.code) === '1') {
+                    mask.style.display = 'none';
+                    getCategoryPage();
+                    alert("新增成功");
+                } else { alert(res.data.msg || "新增失败"); }
+            }).catch(err => alert("新增请求异常：" + err));
+        } else if (operateType === "edit") {
+            axios({
+                url: "/category",
+                method: "put",
+                data: { id: editId, name: name, sort: sort, type: categoryType }
+            }).then(res => {
+                if (String(res.data.code) === '1') {
+                    mask.style.display = 'none';
+                    getCategoryPage();
+                    alert("修改成功");
+                } else { alert(res.data.msg || "修改失败"); }
+            }).catch(err => alert("修改请求异常：" + err));
+        }
+    }
+
+    function logout() {
+        if (confirm('确定要退出登录吗？')) {
+            localStorage.clear();
+            window.location.href = '/backend/page/login.html';
+        }
+    }
+
+    function deleteHandle(type, id) {
+        if (type === '批量' && id === null) {
+            if (checkList.length === 0) { alert('请选择删除对象'); return; }
+        }
+        if (!confirm('确认删除该菜品，是否继续？')) return;
+        let delIds = type === '批量' ? checkList.join(',') : id;
+        deleteDish(delIds).then(res => {
+            if (String(res.data.code) === '1') {
+                alert('删除成功！');
+                getDishPage();
+                checkList = [];
+            } else { alert(res.data.msg || '操作失败'); }
+        }).catch(err => { alert('请求出错了：' + err); })
+    }
+
+    const deleteDish = (ids) => {
+        return axios({ url: '/dish', method: 'delete', params: { ids: ids } })
+    }
+
+    function loadEditDishCategories() {
+        return axios({
+            url: '/category',
+            method: 'GET',
+            params: { type: 1 }
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                const list = res.data.data;
+                const select = document.getElementById('editDishCategory');
+                select.innerHTML = '<option value="">请选择菜品分类</option>';
+                list.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.id;
+                    opt.textContent = item.name;
+                    select.appendChild(opt);
+                });
+            }
+        })
+    }
+
+    function getDishDetailForModal(id) {
+        axios({
+            url: `/dish/${id}`,
+            method: 'GET'
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                const data = res.data.data;
+                document.getElementById('editDishName').value = data.name;
+                document.getElementById('editDishCategory').value = data.categoryId;
+                document.getElementById('editDishPrice').value = (data.price / 100).toFixed(0);
+                document.getElementById('editDishDesc').value = data.description;
+                editImagePath = data.image;
+                const imgUrl = `/common/download?name=${editImagePath}`;
+                document.getElementById('editImgBox').innerHTML = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+                const editFlavorBox = document.getElementById('editFlavorBox');
+                editFlavorBox.innerHTML = '';
+                if (data.flavors && data.flavors.length > 0) {
+                    data.flavors.forEach(flavor => {
+                        let item = document.createElement('div');
+                        item.className = 'flavor-item';
+                        let tagList = JSON.parse(flavor.value);
+                        item.innerHTML = `
+                        <div>
+                            <p>口味名（3个字内）</p>
+                            <input type="text" value="${flavor.name}" maxlength="3">
+                        </div>
+                        <div style="flex:1;">
+                            <p>口味标签（输入标签回车添加）</p>
+                            <input type="text" style="width:100%;" value="${tagList.join(',')}">
+                        </div>
+                        <span class="del-flavor">删除</span>
+                    `;
+                        editFlavorBox.appendChild(item);
+                        item.querySelector('.del-flavor').onclick = () => item.remove();
+                    })
+                }
+            }
+        })
+    }
+
+    document.getElementById('editAddFlavorBtn').onclick = function () {
+        const editFlavorBox = document.getElementById('editFlavorBox');
+        let item = document.createElement('div');
+        item.className = 'flavor-item';
+        item.innerHTML = `
+        <div>
+            <p>口味名（3个字内）</p>
+            <input type="text" placeholder="请输入口味" maxlength="3">
+        </div>
+        <div style="flex:1;">
+            <p>口味标签（输入标签回车添加）</p>
+            <input type="text" style="width:100%;">
+        </div>
+        <span class="del-flavor">删除</span>
+    `;
+        editFlavorBox.appendChild(item);
+        item.querySelector('.del-flavor').onclick = () => item.remove();
+    }
+
+    document.getElementById('editImgBox').onclick = function () {
+        document.getElementById('editFileInput').click();
+    };
+    document.getElementById('editFileInput').onchange = function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('file', file);
+        axios({
+            url: "/common/upload",
+            method: "POST",
+            data: formData
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                editImagePath = res.data.data;
+                document.getElementById('editImgBox').innerHTML = `<img src="/common/download?name=${editImagePath}" style="width:100%;height:100%;object-fit:cover;">`;
+            } else { alert("图片上传失败"); }
+        })
+    }
+
+    document.getElementById('closeEditDishModal').onclick = function () {
+        document.getElementById('editDishMask').style.display = 'none';
+    }
+
+    document.getElementById('saveEditDishBtn').onclick = function () {
+        const name = document.getElementById('editDishName').value.trim();
+        const categoryId = document.getElementById('editDishCategory').value;
+        const price = document.getElementById('editDishPrice').value;
+        const desc = document.getElementById('editDishDesc').value.trim();
+        if (!name) { alert('请输入菜品名称'); return; }
+        if (!categoryId) { alert('请选择分类'); return; }
+        if (!price || Number(price) <= 0) { alert('价格不能为空'); return; }
+        if (!editImagePath) { alert('请上传图片'); return; }
+
+        let params = {
+            id: currentEditDishId,
+            name: name,
+            categoryId: Number(categoryId),
+            price: Math.round(Number(price) * 100),
+            description: desc,
+            image: editImagePath
+        };
+        let flavorList = [];
+        document.querySelectorAll("#editFlavorBox .flavor-item").forEach(item => {
+            let n = item.querySelector('div:first-child input').value.trim();
+            let tText = item.querySelector('div:nth-child(2) input').value.trim();
+            if (!n) return;
+            let tagArr = tText ? tText.split(',').map(x => x.trim()).filter(x => x) : [];
+            flavorList.push({ name: n, value: JSON.stringify(tagArr) })
+        });
+        params.flavors = flavorList;
+
+        axios({
+            url: "/dish",
+            method: "PUT",
+            data: params
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                alert('修改成功');
+                document.getElementById('editDishMask').style.display = 'none';
+                document.getElementById('editDishName').value = '';
+                document.getElementById('editDishPrice').value = '';
+                document.getElementById('editDishDesc').value = '';
+                document.getElementById('editFlavorBox').innerHTML = '';
+                editImagePath = '';
+                getDishPage();
+            } else { alert("修改失败：" + res.data.msg); }
+        }).catch(err => {
+            console.error("请求报错", err);
+            alert('网络请求出错，查看控制台');
+        })
+    }
+
+    function getSetmealPage() {
+        setmealName = document.getElementById('setmealSearchInput').value.trim();
+        axios({
+            url: "/setmeal/page",
+            method: "GET",
+            params: {
+                page: setmealPage,
+                pageSize: setmealPageSize,
+                name: setmealName || undefined
+            }
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                let pageData = res.data.data;
+                setmealTotal = pageData.total;
+                renderSetmealTable(pageData.records);
+                renderSetmealPagination();
+            } else { alert(res.data.msg || "查询失败"); }
+        }).catch(err => { alert("套餐分页请求出错：" + err); })
+    }
+
+    function renderSetmealTable(list) {
+        let tbody = document.getElementById("setmealTableBody");
+        if (list.length === 0) {
+            tbody.innerHTML = `<tr class="empty-row"><td colspan="8">暂无数据</td></tr>`;
+            return;
+        }
+        let html = "";
+        list.forEach(row => {
+            let imgSrc = row.image ? `/common/download?name=${row.image}` : '';
+            let statusText = row.status === 1 ? "启用" : "停用";
+            html += `
+                <tr>
+                    <td><input type="checkbox" data-id='${row.id}'></td>
+                    <td>${row.name}</td>
+                    <td><img src="${imgSrc}" style="width:40px;height:40px;"></td>
+                    <td>${row.categoryName}</td>
+                    <td>${(row.price / 100).toFixed(2)}</td>
+                    <td>${statusText}</td>
+                    <td>${row.updateTime}</td>
+                    <td>
+                        <button onclick="goEditSetmeal('${row.id}')">修改</button>
+                        <button onclick="setmealStatusToggle('${row.id}',${row.status})">
+                            ${row.status === 0 ? '启用' : '停用'}
+                        </button>
+                        <button onclick="setmealDeleteHandle('单删','${row.id}')">删除</button>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        document.querySelectorAll('#setmealTableBody input[type="checkbox"]').forEach(cb => {
+            cb.onchange = function () {
+                let id = this.dataset.id;
+                if (this.checked) { setmealCheckList.push(id); }
+                else { setmealCheckList = setmealCheckList.filter(item => item !== id); }
+            }
+        })
+    }
+
+    function renderSetmealPagination() {
+        document.getElementById("setmealTotalText").innerText = `共 ${setmealTotal} 条`;
+        document.getElementById("setmealCurrentPage").innerText = setmealPage;
+        document.getElementById("setmealJumpPage").value = setmealPage;
+    }
+
+    function setmealStatusHandle(statusNum) {
+        if (setmealCheckList.length === 0) { alert('请先勾选套餐！'); return; }
+        if (!confirm("确认更改套餐状态？")) return;
+        axios({
+            url: `/setmeal/status/${statusNum}`,
+            method: 'post',
+            params: { ids: setmealCheckList.join(',') }
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                alert(statusNum == '0' ? '停用成功' : '启用成功');
+                getSetmealPage();
+                setmealCheckList = [];
+            } else { alert(res.data.msg || '操作失败'); }
+        }).catch(err => { alert('请求异常：' + err); })
+    }
+
+    function setmealStatusToggle(id, currentStatus) {
+        let newStatus = currentStatus === 1 ? 0 : 1;
+        if (!confirm("确认更改套餐状态？")) return;
+        axios({
+            url: `/setmeal/status/${newStatus}`,
+            method: 'post',
+            params: { ids: id }
+        }).then(res => {
+            if (String(res.data.code) === '1') { getSetmealPage(); }
+            else { alert(res.data.msg || '操作失败'); }
+        }).catch(err => { alert('请求异常：' + err); })
+    }
+
+    function setmealDeleteHandle(type, id) {
+        if (type === '批量' && id === null) {
+            if (setmealCheckList.length === 0) { alert('请选择删除对象'); return; }
+        }
+        if (!confirm('确认删除该套餐？')) return;
+        let delIds = type === '批量' ? setmealCheckList.join(',') : id;
+        axios({
+            url: '/setmeal',
+            method: 'delete',
+            params: { ids: delIds }
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                alert('删除成功！');
+                getSetmealPage();
+                setmealCheckList = [];
+            } else { alert(res.data.msg || '操作失败'); }
+        }).catch(err => { alert('请求异常：' + err); })
+    }
+
+    function goEditSetmeal(id) {
+        window.editSetmealId = id;
+        switchPage('addSetmeal');
+    }
+
+    function loadSetmealCategories() {
+        return axios({
+            url: '/category',
+            method: 'GET',
+            params: { type: 2 }
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                const list = res.data.data;
+                const select = document.getElementById('setmealCategory');
+                select.innerHTML = '<option value="">请选择套餐分类</option>';
+                list.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.id;
+                    opt.textContent = item.name;
+                    select.appendChild(opt);
+                });
+            }
+        }).catch(err => {
+            console.error('加载套餐分类失败：', err);
+        });
+    }
+
+    function getSetmealDetailById(id) {
+        axios({
+            url: `/setmeal/${id}`,
+            method: 'GET'
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                fillSetmealForm(res.data.data);
+            } else { alert(res.data.msg || '查询套餐失败'); }
+        }).catch(err => { alert('请求异常：' + err); })
+    }
+
+    function fillSetmealForm(data) {
+        document.getElementById('setmealName').value = data.name;
+        document.getElementById('setmealCategory').value = data.categoryId;
+        document.getElementById('setmealPrice').value = (data.price / 100).toFixed(2);
+        document.getElementById('setmealDesc').value = data.description || '';
+        setmealImagePath = data.image || '';
+        if (data.image) {
+            const imgUrl = `/common/download?name=${data.image}`;
+            document.getElementById('setmealImgBox').innerHTML = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+        }
+        selectedSetmealDishes = [];
+        if (data.setmealDishes && data.setmealDishes.length > 0) {
+            data.setmealDishes.forEach(dish => {
+                selectedSetmealDishes.push({
+                    dishId: dish.dishId,
+                    name: dish.name,
+                    price: dish.price,
+                    copies: dish.copies,
+                    sort: dish.sort
+                });
+            });
+        }
+        renderSetmealDishTable();
+    }
+
+    function clearSetmealForm() {
+        document.getElementById('setmealName').value = '';
+        document.getElementById('setmealCategory').selectedIndex = 0;
+        document.getElementById('setmealPrice').value = '';
+        document.getElementById('setmealDesc').value = '';
+        document.getElementById('setmealImgBox').innerHTML = '上传图片';
+        document.getElementById('setmealFileInput').value = '';
+        setmealImagePath = '';
+        selectedSetmealDishes = [];
+        renderSetmealDishTable();
+        window.editSetmealId = null;
+    }
+
+    function openPickDishModal() {
+        axios({
+            url: '/dish/list',
+            method: 'GET'
+        }).then(res => {
+            if (String(res.data.code) === '1') {
+                let dishes = res.data.data;
+                axios({
+                    url: '/category',
+                    method: 'GET',
+                    params: { type: 1 }
+                }).then(catRes => {
+                    let catMap = {};
+                    if (String(catRes.data.code) === '1') {
+                        catRes.data.data.forEach(c => { catMap[c.id] = c.name; });
+                    }
+                    let html = '';
+                    dishes.forEach(d => {
+                        let alreadySelected = selectedSetmealDishes.some(sd => sd.dishId === d.id);
+                        html += `<tr>
+                            <td><input type="checkbox" data-id="${d.id}" data-name="${d.name}" data-price="${d.price}"
+                                ${alreadySelected ? 'checked disabled' : ''}></td>
+                            <td>${d.name}</td>
+                            <td>${catMap[d.categoryId] || ''}</td>
+                            <td>${(d.price / 100).toFixed(2)}</td>
+                        </tr>`;
+                    });
+                    document.getElementById('pickDishTbody').innerHTML = html || '<tr><td colspan="4">暂无可用菜品</td></tr>';
+                    document.getElementById('pickDishMask').style.display = 'flex';
+                });
+            }
+        }).catch(err => { alert('加载菜品列表失败：' + err); });
+    }
+
+    function confirmPickDishes() {
+        let checks = document.querySelectorAll('#pickDishTbody input[type="checkbox"]:checked:not([disabled])');
+        checks.forEach(cb => {
+            let price = Number(cb.dataset.price);
+            selectedSetmealDishes.push({
+                dishId: Number(cb.dataset.id),
+                name: cb.dataset.name,
+                price: price,
+                copies: 1,
+                sort: selectedSetmealDishes.length + 1
+            });
+        });
+        renderSetmealDishTable();
+        document.getElementById('pickDishMask').style.display = 'none';
+    }
+
+    function renderSetmealDishTable() {
+        let tbody = document.getElementById('setmealDishTbody');
+        if (selectedSetmealDishes.length === 0) {
+            tbody.innerHTML = `<tr class="empty-row"><td colspan="5">暂无菜品，请点击"添加菜品"</td></tr>`;
+            return;
+        }
+        let html = '';
+        selectedSetmealDishes.forEach((dish, index) => {
+            html += `<tr>
+                <td>${dish.name}</td>
+                <td>${(dish.price / 100).toFixed(2)}</td>
+                <td><input type="number" value="${dish.copies}" min="1"
+                         onchange="updateSetmealDish(${index},'copies',this.value)"></td>
+                <td><input type="number" value="${dish.sort}" min="0"
+                         onchange="updateSetmealDish(${index},'sort',this.value)"></td>
+                <td><button onclick="removeSetmealDish(${index})">删除</button></td>
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function updateSetmealDish(index, field, value) {
+        let numVal = Number(value);
+        if (isNaN(numVal) || numVal < 0) return;
+        if (field === 'copies') { selectedSetmealDishes[index].copies = numVal; }
+        else if (field === 'sort') { selectedSetmealDishes[index].sort = numVal; }
+    }
+
+    function removeSetmealDish(index) {
+        selectedSetmealDishes.splice(index, 1);
+        renderSetmealDishTable();
+    }
+
+    function saveSetmeal() {
+        const name = document.getElementById('setmealName').value.trim();
+        const categoryId = document.getElementById('setmealCategory').value;
+        const priceInput = document.getElementById('setmealPrice').value.trim();
+        const desc = document.getElementById('setmealDesc').value.trim();
+
+        // 表单校验
+        if (!name) {
+            alert('请输入套餐名称');
+            return;
+        }
+        if (!categoryId) {
+            alert('请选择套餐分类');
+            return;
+        }
+        if (!priceInput || Number(priceInput) <= 0) {
+            alert('请输入合法套餐价格');
+            return;
+        }
+        if (!setmealImagePath) {
+            alert('请上传套餐图片');
+            return;
+        }
+        if (selectedSetmealDishes.length === 0) {
+            alert('请至少添加一道套餐菜品');
+            return;
+        }
+
+        // 组装参数
+        const params = {
+            name: name,
+            categoryId: Number(categoryId),
+            price: Math.round(Number(priceInput) * 100),
+            description: desc,
+            image: setmealImagePath,
+            setmealDishes: selectedSetmealDishes
+        };
+
+        // 判断新增/编辑
+        if (editSetmealId) {
+            // 修改套餐
+            params.id = editSetmealId;
+            axios({
+                url: '/setmeal',
+                method: 'PUT',
+                data: params
+            }).then(res => {
+                if (String(res.data.code) === '1') {
+                    alert('套餐修改成功');
+                    window.editSetmealId = null;
+                    switchPage('setmealList');
+                } else {
+                    alert(res.data.msg || '修改套餐失败');
+                }
+            }).catch(err => {
+                console.error('修改套餐异常', err);
+                alert('网络请求异常，查看控制台日志');
+            });
+        } else {
+            // 新增套餐，默认启用
+            params.status = 1;
+            axios({
+                url: '/setmeal',
+                method: 'POST',
+                data: params
+            }).then(res => {
+                if (String(res.data.code) === '1') {
+                    alert('新增套餐成功');
+                    window.editSetmealId = null;
+                    switchPage('setmealList');
+                } else {
+                    alert(res.data.msg || '新增套餐失败');
+                }
+            }).catch(err => {
+                console.error('新增套餐异常', err);
+                alert('网络请求异常，查看控制台日志');
+            });
+        }
+    }
+</script>

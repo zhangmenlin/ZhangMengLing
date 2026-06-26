@@ -1,7 +1,7 @@
 package com.xzcit.zhangmengling.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.xzcit.zhangmengling.entity.Employee;
 
-public interface EmployeeService {
-    com.xzcit.zhangmengling.entity.Employee login(com.xzcit.zhangmengling.entity.Employee employee);
+public interface EmployeeService extends IService<Employee> {
 }

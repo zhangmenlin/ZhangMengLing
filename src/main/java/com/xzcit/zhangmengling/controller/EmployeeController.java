@@ -1,37 +1,41 @@
 package com.xzcit.zhangmengling.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xzcit.zhangmengling.common.R;
 import com.xzcit.zhangmengling.entity.Employee;
 import com.xzcit.zhangmengling.service.EmployeeService;
-import com.xzcit.zhangmengling.utils.R;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 
+@Slf4j
 @RestController
 @RequestMapping("/employee")
-public class EmployeeController {
 
+public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
-
-    /**
-     * 员工登录接口 POST /employee/login
-     * 接收前端JSON参数 {username:"",password:""}
-     */
     @PostMapping("/login")
-    public R<Employee> login(HttpSession session, @RequestBody Employee employee) {
-        Employee loginUser = employeeService.login(employee);
-        if (loginUser != null) {
-            // 将员工id存入Session
-            session.setAttribute("employee", loginUser.getId());
-            // 登录成功 code=1
-            return R.success(loginUser);
+    public R<Employee> login(HttpServletRequest request, @RequestBody Employee employee){
+        String password = employee.getPassword();
+        password = DigestUtils.md5DigestAsHex(password.getBytes());
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Employee::getUsername, employee.getUsername());
+        Employee emp = employeeService.getOne(queryWrapper);
+        if(emp == null || !emp.getPassword().equals(password)){
+            return R.error("用户名或密码错误");
         }
-        // 登录失败
-        return R.error("账号或密码不正确");
+
+        if(emp.getStatus() == 0){
+            return R.error("账号已禁用");
+        }
+        request.getSession().setAttribute("employee", emp.getId());
+        return R.success(emp);
     }
 }

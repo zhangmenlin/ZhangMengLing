@@ -1,0 +1,352 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Microsoft Yahei", sans-serif;
+}
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ========== 顶部头部样式 ========== */
+.page-header {
+    height: 60px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    flex-shrink: 0;
+}
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+.user-dropdown-wrap {
+    position: relative;
+}
+.user-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid #eee;
+}
+.user-btn:hover {
+    background: #f5f7fa;
+}
+.user-dropdown {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    width: 120px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: none;
+    z-index: 99;
+}
+.user-dropdown li {
+    list-style: none;
+    padding: 10px 14px;
+    cursor: pointer;
+}
+.user-dropdown li:hover {
+    background: #f0f2f5;
+}
+.user-dropdown-wrap:hover .user-dropdown {
+    display: block;
+}
+
+/* ========== 主体容器：导航+内容 ========== */
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ========== 左侧侧边导航样式 ========== */
+.sidebar-nav {
+    width: 180px;
+    background: #2c2c3f;
+    color: #fff;
+    flex-shrink: 0;
+    overflow-y: auto;
+}
+.sidebar-logo {
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #3f3f5a;
+}
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    background: #ffd000;
+    border-radius: 50%;
+}
+.sidebar-logo span {
+    font-size: 20px;
+    font-weight: bold;
+}
+.nav-menu {
+    margin-top: 10px;
+}
+.nav-item {
+    position: relative;
+}
+.nav-parent {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.nav-parent.active {
+    background: #ffc107;
+    color: #222;
+}
+.nav-parent:hover:not(.active) {
+    background: #3a3a52;
+}
+.arrow {
+    margin-left: auto;
+}
+.nav-submenu {
+    background: #252538;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+.nav-item.open .nav-submenu {
+    max-height: 200px;
+}
+.nav-submenu li {
+    list-style: none;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    padding-left: 50px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #ccc;
+}
+.nav-submenu li:hover {
+    background: #33334d;
+    color: #fff;
+}
+
+/* ========== 右侧内容区域 ========== */
+.content-wrap {
+    flex: 1;
+    background: #f5f7fa;
+    padding: 24px;
+    overflow-y: auto;
+}
+.content-title {
+    font-size: 24px;
+    margin-bottom: 24px;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+/* 菜品管理操作栏（优化排版，左右两端对齐，和截图一模一样） */
+.operate-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.search-input {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    width: 260px;
+    font-size: 15px;
+}
+/* 按钮组 */
+.btn-group {
+    display: flex;
+    gap: 12px;
+}
+.btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.btn:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+.btn-black {
+    background: #222;
+    color: #fff;
+}
+.btn-yellow {
+    background: #ffc107;
+    color: #222;
+}
+.btn-blue {
+    background: #36bffb;
+    color: #fff;
+}
+.btn-gray {
+    background: #eee;
+    color: #333;
+}
+/* 批量删除按钮（浅灰） */
+.btn-del {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+/* 批量停售按钮 */
+.btn-stop {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+/* 表格样式优化 */
+.table-box {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    width: 100%;
+    overflow: hidden;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 16px 12px;
+    text-align: center;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 15px;
+}
+th {
+    background: #f9fafb;
+    color: #4b5563;
+    font-weight: 500;
+}
+.empty-row td {
+    height: 140px;
+    color: #9ca3af;
+    font-size: 16px;
+}
+
+/* 分页样式优化 */
+.page-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px 0;
+    font-size: 15px;
+}
+.page-size, .page-input {
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+.page-input {
+    width: 65px;
+    text-align: center;
+}
+.page-btn {
+    padding: 6px 12px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.page-btn:hover {
+    background-color: #f9fafb;
+}
+
+/* 弹窗遮罩 */
+.mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+}
+.modal {
+    width: 420px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 28px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.modal-title {
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+.modal-item {
+    margin-bottom: 16px;
+}
+.modal-item label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+.modal-item input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+.modal-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+/* ====== 新增菜品页面+口味模块样式 ====== */
+.form-item {
+    margin: 20px 0;
+}
+.form-item label {
+    font-size: 15px;
+    margin-right: 8px;
+}
+.form-item input, .form-item select, .form-item textarea {
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 15px;
+}
+.flavor-item {
+    margin: 16px 0;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+.del-flavor {
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 15px;
+}
