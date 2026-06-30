@@ -36,6 +36,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 
     public DishDto getByIdWithFlavor(Long id){
         Dish dish = this.getById(id);
+        if (dish == null) {
+            return null;
+        }
         DishDto dishDto = new DishDto();
         BeanUtils.copyProperties(dish, dishDto);
         LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
@@ -44,6 +47,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         dishDto.setFlavors(flavors);
         return dishDto;
     }
+
+// ... existing code ...
+
 
     @Override
     @Transactional
